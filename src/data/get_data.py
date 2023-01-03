@@ -1,8 +1,10 @@
 import pandas as pd
 from bs4 import BeautifulSoup
+import os
 import time
 import yaml
 import datetime
+import pickle
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -43,6 +45,7 @@ class Crawler():
         return pd.read_html(str(table))[0]
 
     def collect_data(self, num_clicks=None, start_page=0):
+        previous_date = None
         print("Starting data collection")
         if num_clicks is None:
             num_clicks = int(self.pages) - 1
@@ -59,6 +62,15 @@ class Crawler():
             dfs.append(self.make_df())
             if i % 100 == 0:
                 print(f"Collected {i} pages")
+            if i % 500 == 0:
+                if previous_date is not None:
+                    try:
+                        os.remove(f'data_files/df_lists-{previous_date}.pkl')
+                    except Exception as e:
+                        print(f'Unable to delete previous saved file because of: {e}')
+                print("Saving data")
+                previous_date = datetime.date.today()
+                pickle.dump(dfs, open(f'data_files/df_lists-{previous_date}.pkl', 'wb')))
         print("Finished data collection")
         return pd.concat(dfs, ignore_index=True).reset_index(drop=True)
 
@@ -73,7 +85,7 @@ class Crawler():
         df = df.dropna(how='all')
         if save:
             today = datetime.date.today()
-            df.to_csv(f'../../data_files/scraped_data-{today}.csv', index=False)
+            df.to_csv(f'/data_files/scraped_data-{today}.csv', index=False)
         return df
 
 
