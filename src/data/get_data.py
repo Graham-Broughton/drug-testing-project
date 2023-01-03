@@ -14,20 +14,18 @@ class Crawler():
     def __init__(self, url):
         # sourcery skip: remove-pass-body
         self.url = url
-        self.connect(self.url)
-        self.pages = self.driver.find_element(
-            By.XPATH,
-            '/html/body/div/div/div[3]/div/div/div[3]/div/div/div[2]/div/div/div/div[3]/div/div[2]'
-        ).text
 
-    def connect(self, url):
+    def connect(self):
         print("Connecting to Selenium")
         self.driver = webdriver.Chrome()
-        self.driver.get(CFG['URL2'])
+        self.driver.get(self.url)
         self.driver.set_window_size(1280, 680)
         time.sleep(40)
         self.driver.switch_to.frame(0)
         self.driver.find_element(By.XPATH, '//*[@id="tab_container"]/li[3]/a').click()
+        self.pages = self.driver.find_element(By.XPATH,
+            '/html/body/div/div/div[3]/div/div/div[3]/div/div/div[2]/div/div/div/div[3]/div/div[2]'
+        ).text
         print("Successfully connected to Selenium")
 
     def teardown_method(self):
@@ -47,7 +45,7 @@ class Crawler():
     def collect_data(self, num_clicks=None, start_page=0):
         print("Starting data collection")
         if num_clicks is None:
-            num_clicks = self.pages
+            num_clicks = int(self.pages) - 1
         if start_page != 0:
             self.driver.find_element(By.CLASS_NAME, "current-page").click()
             self.driver.find_element(By.CLASS_NAME, "current-page").send_keys(str(start_page))
@@ -80,7 +78,19 @@ class Crawler():
 
 
 if __name__ == "__main__":
-    with open("../config.yaml", "r") as f:
+    with open("config.yaml", "r") as f:
         CFG = yaml.safe_load(f)
 
-    Crawler(CFG['URL2']).run()
+    crawler = Crawler(CFG['URL2'])
+    try:
+        crawler.connect()
+    except Exception as e:
+        crawler.teardown_method()
+        print(e)
+        print("Something went wrong, trying again")
+        try:
+            crawler.connect()
+        except Exception as e:
+            print(e)
+            print("Something went wrong again, try again later")
+    crawler.run()
