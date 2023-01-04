@@ -1,8 +1,8 @@
 import pandas as pd
 from bs4 import BeautifulSoup
-import os
+from os.path import join
 import time
-import yaml
+import os
 import datetime
 import pickle
 from selenium import webdriver
@@ -13,16 +13,18 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 
 class Crawler():
-    def __init__(self, url):
+    def __init__(self, **kwargs):
         # sourcery skip: remove-pass-body
-        self.url = url
+        self.url = kwargs['url']
+        self.seconds_to_wait = kwargs['sec_wait']
+        self.data_file_path = kwargs['data_file_path']
 
     def connect(self):
         print("Connecting to Selenium")
         self.driver = webdriver.Chrome()
         self.driver.get(self.url)
         self.driver.set_window_size(1280, 680)
-        time.sleep(40)
+        time.sleep(self.seconds_to_wait)
         self.driver.switch_to.frame(0)
         self.driver.find_element(By.XPATH, '//*[@id="tab_container"]/li[3]/a').click()
         self.pages = self.driver.find_element(By.XPATH,
@@ -44,7 +46,7 @@ class Crawler():
         table = soup.find('table')
         return pd.read_html(str(table))[0]
 
-    def collect_data(self, num_clicks=None, start_page=0):
+    def collect_data(self, num_clicks=None, start_page=0, save=True):
         previous_date = None
         print("Starting data collection")
         if num_clicks is None:
@@ -58,42 +60,38 @@ class Crawler():
             WebDriverWait(self.driver, 5).until(
                 EC.element_to_be_clickable((By.CLASS_NAME, "next-page"))
             )
-            self.click_button(By.CLASS_NAME, "next-page", 0.1)
+            self.click_button(By.CLASS_NAME, "next-page", 0)
             dfs.append(self.make_df())
             if i % 100 == 0:
                 print(f"Collected {i} pages")
-            if i % 500 == 0:
+            if (i % 500 == 0) and save:
                 if previous_date is not None:
                     try:
-                        os.remove(f'data_files/df_lists-{previous_date}.pkl')
+                        path = join(self.data_file_path, f'df_lists-{previous_date}.pkl')
+                        os.remove(path)
                     except Exception as e:
                         print(f'Unable to delete previous saved file because of: {e}')
                 print("Saving data")
                 previous_date = datetime.date.today()
-                pickle.dump(dfs, open(f'data_files/df_lists-{previous_date}.pkl', 'wb')))
+                path = join(self.data_file_path, f'df_lists-{previous_date}.pkl')
+                pickle.dump(dfs, open(path, 'wb'))
         print("Finished data collection")
         return pd.concat(dfs, ignore_index=True).reset_index(drop=True)
 
-    def run(self, num_clicks=None, num_threads=1, save=True):
+    def run(self, num_clicks=None, save=True):
         # sourcery skip: remove-pass-body, remove-redundant-if
-        if num_threads > 1:
-            pass
-        else:
-            df = self.collect_data(num_clicks)
+        df = self.collect_data(num_clicks)
         self.teardown_method()
         df.columns = df.columns.str.replace('  ', ' ')
         df = df.dropna(how='all')
         if save:
             today = datetime.date.today()
-            df.to_csv(f'/data_files/scraped_data-{today}.csv', index=False)
+            path = join(self.data_file_path, f'scraped_data-{today}.csv')
+            df.to_csv(path, index=False)
         return df
 
-
-if __name__ == "__main__":
-    with open("config.yaml", "r") as f:
-        CFG = yaml.safe_load(f)
-
-    crawler = Crawler(CFG['URL2'])
+def main(url, sec_wait, data_file_path):
+    crawler = Crawler(url=url, sec_wait=sec_wait, data_file_path=data_file_path)
     try:
         crawler.connect()
     except Exception as e:
@@ -105,4 +103,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(e)
             print("Something went wrong again, try again later")
-    crawler.run()
+    return crawler.run()
+
+if __name__ == "__main__":
+    main()
