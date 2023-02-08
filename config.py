@@ -1,13 +1,10 @@
-import os
-from os.path import join
+from dataclasses import dataclass, field
 
 
-BASEPATH = os.path.realpath(os.path.dirname(__file__))
-DATA = join(BASEPATH, join('src', 'data'))
-VIZ = join(BASEPATH, join('src', 'visualization'))
-DATA_FILES = join(BASEPATH, join('data_files'))
-
-URL = "https://drugcheckingbc.ca/dashboard/"
-HEADLESS = False
-SEC_WAITING = 40
-N_WORKERS = 4
+@dataclass
+class CFG:
+    URL: str = "https://drugcheckingbc.ca/results/"
+    URL2: str = "https://drugcheckingbc.ca/dashboard/"
+    WINDOW_SIZE: tuple = field(default_factory=lambda: (1280, 680))
+    CHROME_OPTIONS: list = field(default_factory=lambda: ["--headless", "--disable-gpu"])
+    
