@@ -1,26 +1,17 @@
-import pandas as pd
-import os
-import time
-import yaml
-import datetime
-import pickle
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 
+import os
 import sys
 sys.path.append('..')
 from config import CFG
 CFG=CFG()
 
 class Crawler(object):
-    url=CFG.URL2
-    window_size=CFG.WINDOW_SIZE
-    max_tries=CFG.MAX_TRIES
+    # Use class attributes so that the values can be inherited
     chrome_options = CFG.CHROME_OPTS
     options = webdriver.ChromeOptions()
     if bool(chrome_options) is not None:
@@ -39,13 +30,13 @@ class Crawler(object):
         # sourcery skip: remove-pass-body
         print("starting selenium")
         if bool(self.chrome_options) is not None:
-            self.driver = webdriver.Chrome(options=self.options)
+            self.driver = webdriver.Chrome(executable_path=CFG.PATH_TO_DRIVER, options=self.options)
         else:
-            self.driver = webdriver.Chrome()
+            self.driver = webdriver.Chrome(executable_path=CFG.PATH_TO_DRIVER)
 
         print("Connected to website")
-        self.driver.get(self.url)
-        self.driver.set_window_size(self.window_size[0], self.window_size[1])
+        self.driver.get(CFG.URL)
+        self.driver.set_window_size(CFG.WINDOW_SIZE[0], CFG.WINDOW_SIZE[1])
         return
 
     def load_webpage(self):
@@ -55,20 +46,23 @@ class Crawler(object):
         """
         print("waiting to switch frames")
         # Need to switch frames to enable interaction with the loaded javascript
-        WebDriverWait(self.driver, 10).until(EC.frame_to_be_available_and_switch_to_it((By.CLASS_NAME, "iframe-class")))
-        print("switched frames, waiting to click results")
+        WebDriverWait(self.driver, CFG.FIRST_IFRAME_WAIT).until(EC.frame_to_be_available_and_switch_to_it((By.CLASS_NAME, "iframe-class")))
+        print("switched frames, waiting for error messages")
 
-        # checking to see if the react error message is present, if it is, refresh and if not, pass
+        # checking to see if the error messages are present, if they are, refresh and if not, pass
         try:
-            WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((By.XPATH, '//*[@id="react-entry-point"]/div')))
-            WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[2]/div'))) 
+            WebDriverWait(self.driver, CFG.SECOND_IFRAME_WAIT).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH, "/html/body/iframe")))
+            WebDriverWait(self.driver, CFG.HEROKU_WAIT).until(EC.presence_of_element_located((By.CLASS_NAME, 'message__title'))) 
+            WebDriverWait(self.driver, CFG.REACT_WAIT).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[2]/div'))) 
         except TimeoutException as e:
             pass
         else:
+            print("Found error messages, refreshing page")
             self.refresh_page()
 
         # waiting to click results tab
-        WebDriverWait(self.driver, 20).until(
+        print("Waiting on results button")
+        WebDriverWait(self.driver, CFG.RESULT_BUTTON_WAIT).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, "#tab_container > li:nth-child(3) > a"))
             ).click()
         print("selected results tab")
@@ -85,6 +79,7 @@ class Crawler(object):
         self.start()
         loaded = False
         counter = 0
+        # While the results tab is not loaded, it goes through N loops trying to open it
         while not loaded:
             try:
                 self.load_webpage()
@@ -95,10 +90,10 @@ class Crawler(object):
                 print(f"Exception: {e}, trying again")
                 self.refresh_page(e)
             counter += 1
-            if counter == self.max_tries:
+            if counter == CFG.MAX_TRIES:  # Found in the CFG python file
                 print("Too many attempts, exiting")
-                self.driver.quit()
-                break
+                os._exit(1)
+                
 
     def refresh_page(self, error):
         print(f"{error}, trying again")

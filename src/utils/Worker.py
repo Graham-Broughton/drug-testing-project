@@ -6,6 +6,7 @@ import pickle
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import TimeoutException
@@ -39,8 +40,11 @@ class Worker(Crawler):
             queue: An instance of multiprocessing.Queue
         """
         page = self.get_from_queue(data_queue)
-        page_box = self.driver.find_element(By.CLASS_NAME, "current-page")
+        page_box = WebDriverWait(self.driver, CFG.RESULT_BUTTON_WAIT).until(
+                EC.element_to_be_clickable((By.CLASS_NAME, "current-page"))
+            )
         page_box.send_keys(page)
+        page_box.send_keys(Keys.RETURN)
         return page
 
     def make_df(self):
@@ -75,4 +79,5 @@ def run(data_queue, product_queue):
             worker.connect()
         except Exception:
             del worker
-    worker.collect_data(data_queue, product_queue)
+    else:
+        worker.collect_data(data_queue, product_queue)

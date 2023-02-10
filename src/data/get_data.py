@@ -16,22 +16,22 @@ import sys
 sys.path.append(os.getcwd())
 from config import CFG
 
+current_dir = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+data_path = os.path.join(current_dir, "data_files")
+
 CFG = CFG()
 
-
 class Crawler():
-    def __init__(self, CFG):
-        # sourcery skip: remove-pass-body
-        self.url = CFG.URL2
-        self.seconds_to_wait = CFG.WAIT
-        self.data_file_path = CFG.DATA_PATH
-        self.window_size = CFG.WINDOW_SIZE
-
     def connect(self):
         print("Connecting to Selenium")
-        self.driver = webdriver.Chrome()
-        self.driver.get(self.url)
-        self.driver.set_window_size(self.window_size[0], self.window_size[1])
+        user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'
+        options = webdriver.ChromeOptions()
+        options.add_argument(f'user-agent={user_agent}')
+        options.add_argument("--start-maximized")
+        options.add_argument("--headless")#CFG.CHROME_OPTS
+        self.driver = webdriver.Chrome(options=options)
+        self.driver.get(CFG.URL)
+        self.driver.set_window_size(CFG.WINDOW_SIZE[0], CFG.WINDOW_SIZE[1])
         WebDriverWait(self.driver, 10).until(EC.frame_to_be_available_and_switch_to_it((By.CLASS_NAME, "iframe-class")))
 
         try:
@@ -59,6 +59,12 @@ class Crawler():
         """
         Finds the container holding the last page number and returns it as a string
         """
+        page_path = os.path.join(data_path, f"page_data\page_count_{CFG.DATE}.txt")
+        if os.path.isfile(page_path):
+            with open(page_path, 'r') as f:
+                pages = f.read()
+            print(f"Using cached page count: {str(pages)}")
+            return str(pages)
         pages = self.driver.find_element(By.CLASS_NAME,
             'last-page'
         ).text
@@ -79,14 +85,12 @@ class Crawler():
     def collect_data(self, pages, start_page=0, save=True):
         previous_date = None
         print("Starting data collection")
-        # if num_clicks is None:
-        #     num_clicks = int(self.pages) - 1
         if start_page != 0:
             self.driver.find_element(By.CLASS_NAME, "current-page").click()
             self.driver.find_element(By.CLASS_NAME, "current-page").send_keys(str(start_page))
             self.driver.find_element(By.CLASS_NAME, "current-page").send_keys(Keys.ENTER)
         dfs = [self.make_df()]
-        for i in range(1, int(pages)+1):
+        for i in range(1, int(pages)-1):
             WebDriverWait(self.driver, 0.1).until(
                 EC.element_to_be_clickable((By.CLASS_NAME, "next-page"))
             )
@@ -97,14 +101,14 @@ class Crawler():
             if (i % 500 == 0) and save:
                 if previous_date is not None:
                     try:
-                        path = join(self.data_file_path, f'df_lists-{previous_date}.pkl')
+                        path = join(data_path, f'df-{previous_date}.pkl')
                         os.remove(path)
                     except Exception as e:
                         print(f'Unable to delete previous saved file because of: {e}')
                 print("Saving data")
                 previous_date = datetime.date.today()
-                path = join(self.data_file_path, f'df_lists-{previous_date}.pkl')
-                pickle.dump(dfs, open(path, 'wb'))
+                path = join(data_path, f'df-{previous_date}.pkl')
+                pickle.dump(pd.concat(dfs), open(path, 'wb'))
         print("Finished data collection")
         return pd.concat(dfs, ignore_index=True).reset_index(drop=True)
 
@@ -117,12 +121,12 @@ class Crawler():
         df = df.dropna(how='all')
         if save:
             today = datetime.date.today()
-            path = join(self.data_file_path, f'scraped_data-{today}.csv')
+            path = join(data_path, f'scraped_data-{today}.csv')
             df.to_csv(path, index=False)
         return df
 
-def main(CFG):
-    crawler = Crawler(CFG)
+def main():
+    crawler = Crawler()
     try:
         crawler.connect()
     except Exception as e:
