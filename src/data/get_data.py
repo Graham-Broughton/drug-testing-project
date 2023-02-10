@@ -10,30 +10,60 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.common.exceptions import TimeoutException
+
+import sys
+sys.path.append(os.getcwd())
+from config import CFG
+
+CFG = CFG()
 
 
 class Crawler():
-    def __init__(self, **kwargs):
+    def __init__(self, CFG):
         # sourcery skip: remove-pass-body
-        self.url = kwargs['url']
-        self.seconds_to_wait = kwargs['sec_wait']
-        self.data_file_path = kwargs['data_file_path']
+        self.url = CFG.URL2
+        self.seconds_to_wait = CFG.WAIT
+        self.data_file_path = CFG.DATA_PATH
+        self.window_size = CFG.WINDOW_SIZE
 
     def connect(self):
         print("Connecting to Selenium")
         self.driver = webdriver.Chrome()
         self.driver.get(self.url)
-        self.driver.set_window_size(1280, 680)
-        time.sleep(self.seconds_to_wait)
-        self.driver.switch_to.frame(0)
-        self.driver.find_element(By.XPATH, '//*[@id="tab_container"]/li[3]/a').click()
-        self.pages = self.driver.find_element(By.XPATH,
-            '/html/body/div/div/div[3]/div/div/div[3]/div/div/div[2]/div/div/div/div[3]/div/div[2]'
-        ).text
+        self.driver.set_window_size(self.window_size[0], self.window_size[1])
+        WebDriverWait(self.driver, 10).until(EC.frame_to_be_available_and_switch_to_it((By.CLASS_NAME, "iframe-class")))
+
+        try:
+            WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="react-entry-point"]/div')))
+            WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[2]/div'))) 
+        except TimeoutException as e:
+            pass
+        else:
+            self.refresh_page()
+
+        WebDriverWait(self.driver, 20).until(
+            EC.element_to_be_clickable((
+                By.CSS_SELECTOR, "#tab_container > li:nth-child(3) > a"))
+        ).click()
         print("Successfully connected to Selenium")
 
     def teardown_method(self):
         self.driver.quit()
+
+    def refresh_page(self, error):
+        print(f"{error}, trying again")
+        self.driver.refresh()
+
+    def get_page_count(self):
+        """
+        Finds the container holding the last page number and returns it as a string
+        """
+        pages = self.driver.find_element(By.CLASS_NAME,
+            'last-page'
+        ).text
+        print(f"Page count: {pages}")
+        return str(pages)
 
     def click_button(self, selector, value, sleep_time=0):
         button = self.driver.find_element(selector, value)
@@ -46,18 +76,18 @@ class Crawler():
         table = soup.find('table')
         return pd.read_html(str(table))[0]
 
-    def collect_data(self, num_clicks=None, start_page=0, save=True):
+    def collect_data(self, pages, start_page=0, save=True):
         previous_date = None
         print("Starting data collection")
-        if num_clicks is None:
-            num_clicks = int(self.pages) - 1
+        # if num_clicks is None:
+        #     num_clicks = int(self.pages) - 1
         if start_page != 0:
             self.driver.find_element(By.CLASS_NAME, "current-page").click()
             self.driver.find_element(By.CLASS_NAME, "current-page").send_keys(str(start_page))
             self.driver.find_element(By.CLASS_NAME, "current-page").send_keys(Keys.ENTER)
         dfs = [self.make_df()]
-        for i in range(num_clicks):
-            WebDriverWait(self.driver, 5).until(
+        for i in range(1, int(pages)+1):
+            WebDriverWait(self.driver, 0.1).until(
                 EC.element_to_be_clickable((By.CLASS_NAME, "next-page"))
             )
             self.click_button(By.CLASS_NAME, "next-page", 0)
@@ -78,9 +108,10 @@ class Crawler():
         print("Finished data collection")
         return pd.concat(dfs, ignore_index=True).reset_index(drop=True)
 
-    def run(self, num_clicks=None, save=True):
+    def run(self, save=True):
         # sourcery skip: remove-pass-body, remove-redundant-if
-        df = self.collect_data(num_clicks)
+        pages = self.get_page_count()
+        df = self.collect_data(pages)
         self.teardown_method()
         df.columns = df.columns.str.replace('  ', ' ')
         df = df.dropna(how='all')
@@ -90,8 +121,8 @@ class Crawler():
             df.to_csv(path, index=False)
         return df
 
-def main(url, sec_wait, data_file_path):
-    crawler = Crawler(url=url, sec_wait=sec_wait, data_file_path=data_file_path)
+def main(CFG):
+    crawler = Crawler(CFG)
     try:
         crawler.connect()
     except Exception as e:
@@ -104,6 +135,3 @@ def main(url, sec_wait, data_file_path):
             print(e)
             print("Something went wrong again, try again later")
     return crawler.run()
-
-if __name__ == "__main__":
-    main()
