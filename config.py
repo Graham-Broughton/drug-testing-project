@@ -5,10 +5,11 @@ today = datetime.now().strftime("%Y-%m-%d")
 
 @dataclass
 class CFG:
-    PATH_TO_DRIVER: str = r"C:\\Users\broug\chromedriver.exe"
+    PATH_TO_DRIVER: str = r"C:\\Users\\broug\\chromedriver.exe"
     URL: str = "https://drugcheckingbc.ca/dashboard/"
     WINDOW_SIZE: tuple = field(default_factory=lambda: (1280, 680))
-    CHROME_OPTS: list = field(default_factory=lambda: ["--start-maximised", "--headless"]) # 
+    USER_AGENT: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
+    CHROME_OPTS: list = field(default_factory=lambda: ["--start-maximised", "--headless"])
     FIRST_IFRAME_WAIT: int = 30
     SECOND_IFRAME_WAIT: int = 10
     HEROKU_WAIT: int = 10
@@ -21,4 +22,8 @@ class CFG:
     WAIT_INTERVAL: int = 5
     SEC_HEADSTART: int = 30
     DATE: str = str(today)
+    SAVE: bool = True
+
+    def __post_init__(self):
+        self.CHROME_OPTS = self.CHROME_OPTS + [f"user-agent={self.USER_AGENT}"]
     
