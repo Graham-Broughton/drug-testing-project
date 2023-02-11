@@ -91,8 +91,8 @@ class Crawler(object):
                 self.refresh_page(e)
             counter += 1
             if counter == CFG.MAX_TRIES:  # Found in the CFG python file
-                print("Too many attempts, exiting")
-                os._exit(1)
+                print("Too many attempts, try again")
+                self.driver.quit()
                 
 
     def refresh_page(self, error):

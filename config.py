@@ -15,9 +15,10 @@ class CFG:
     REACT_WAIT: int = 10
     RESULT_BUTTON_WAIT: int = 30
     MAX_TRIES: int = 5
-    WAIT: int = 30
+    WAIT: int = 60
     DATA_PATH: str = field(default=None)
-    NUM_WORKERS: int = 1
-    SEC_HEADSTART: int = 300
+    NUM_WORKERS: int = 5
+    WAIT_INTERVAL: int = 5
+    SEC_HEADSTART: int = 30
     DATE: str = str(today)
     

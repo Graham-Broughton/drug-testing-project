@@ -1,15 +1,9 @@
 import pandas as pd
-import os
-import time
-import datetime
-import pickle
 
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.common.exceptions import TimeoutException
 from bs4 import BeautifulSoup
 
 import sys
@@ -59,15 +53,16 @@ class Worker(Crawler):
         then puts it into the product queue
         """
         print("Starting data collection")
-        while True:
+        while not data_queue.empty():
             page = self.change_page(data_queue)
             if  page == "END":
                 print("Finished collecting data")
                 break
             df = self.make_df()
             product_queue.put(df)
+        return
 
-def run(data_queue, product_queue):
+def run(data_queue, product_queue, conn):
     """
     Runs the collect_data function
     """
@@ -78,6 +73,8 @@ def run(data_queue, product_queue):
         try:
             worker.connect()
         except Exception:
-            del worker
+            conn.send(0)
     else:
+        conn.send(1)
         worker.collect_data(data_queue, product_queue)
+    return
