@@ -23,6 +23,7 @@ class CFG:
     SEC_HEADSTART: int = 30
     DATE: str = str(today)
     SAVE: bool = True
+    USE_OLDER_DATA: bool = True
 
     def __post_init__(self):
         self.CHROME_OPTS = self.CHROME_OPTS + [f"user-agent={self.USER_AGENT}"]

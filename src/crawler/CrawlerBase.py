@@ -96,7 +96,7 @@ class Crawler(object):
                 
 
     def refresh_page(self, error):
-        print(f"{error}, trying again")
+        print(f"{error} trying again")
         self.driver.refresh()
 
     def __del__(self):

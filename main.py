@@ -9,7 +9,7 @@ sys.path.append(os.getcwd())
 import warnings; warnings.simplefilter('ignore')
 
 from src.data.get_data import main
-from src.data import process_data
+from src.data.process_data import process_data
 import src.data.get_data_multi as multi
 import src.data.get_data as single
 from config import CFG
@@ -20,16 +20,18 @@ date = datetime.now().strftime("%Y-%m-%d")
 current_dir = os.path.abspath(os.getcwd())
 data_dir = os.path.join(current_dir, "data_files")
 raw_data_path = os.path.join(data_dir, "raw")
-page_path = os.path.join(data_dir, "page_data")
+page_path = os.path.join(data_dir, "page_count_data")
+processed_data_path = os.path.join(data_dir, "processed")
 
 CFG.DATE = date
 CFG.CURRENT_DIR = current_dir
 CFG.DATA_DIR = data_dir
 CFG.RAW_DATA_PATH = raw_data_path
 CFG.PAGE_PATH = page_path
+CFG.PROCESSED_DATA_PATH = processed_data_path
 
 
-def main(CFG, multiprocessing=True):
+def get_data(CFG, multiprocessing=True):
     """
     The main entry point of this module, can be run using single or multiprocessing.
     
@@ -46,9 +48,11 @@ def main(CFG, multiprocessing=True):
     return df
 
 
+
 if __name__ == "__main__":
     CFG.SAVE = False
     df = main(CFG, multiprocessing=True)
+    df = process_data(CFG)
     
 
 
