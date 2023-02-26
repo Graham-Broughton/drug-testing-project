@@ -18,7 +18,7 @@ class CFG:
     MAX_TRIES: int = 5
     WAIT: int = 60
     DATA_PATH: str = field(default=None)
-    NUM_WORKERS: int = 2
+    NUM_WORKERS: int = 3
     WAIT_INTERVAL: int = 5
     SEC_HEADSTART: int = 60
     DATE: str = str(today)

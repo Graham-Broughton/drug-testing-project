@@ -51,6 +51,7 @@ if __name__ == "__main__":
     CFG.SAVE = False
     df = get_data(CFG, multiprocessing=True)
     df = process_data(CFG)
+    df.to_csv(f'{CFG.PROCESSED_DATA_PATH}/df-{CFG.DATE}.csv', index=False)
     
 
 
