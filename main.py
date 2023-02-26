@@ -8,7 +8,6 @@ sys.path.append(os.getcwd())
 
 import warnings; warnings.simplefilter('ignore')
 
-from src.data.get_data import main
 from src.data.process_data import process_data
 import src.data.get_data_multi as multi
 import src.data.get_data as single
@@ -16,7 +15,7 @@ from config import CFG
 
 CFG = CFG()
 
-date = datetime.now().strftime("%Y-%m-%d")
+date = datetime(2023, 2, 10).strftime("%Y-%m-%d")
 current_dir = os.path.abspath(os.getcwd())
 data_dir = os.path.join(current_dir, "data_files")
 raw_data_path = os.path.join(data_dir, "raw")
@@ -51,7 +50,7 @@ def get_data(CFG, multiprocessing=True):
 
 if __name__ == "__main__":
     CFG.SAVE = False
-    df = main(CFG, multiprocessing=True)
+    df = get_data(CFG, multiprocessing=True)
     df = process_data(CFG)
     
 

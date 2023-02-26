@@ -52,7 +52,7 @@ def main(DQ: Queue, PQ: Queue, CFG: dataclass) -> pd.DataFrame:
     workers = []
     for _ in range(CFG.NUM_WORKERS):
         conn1, conn2 = Pipe()  # Simple pipe to communicate if the child process was able to connect to website
-        worker = Process(target=work.run, args=(DQ, PQ, conn2), daemon=True)
+        worker = Process(target=work.run, args=(DQ, PQ, conn2))
         worker.start()
         resp = conn1.recv()
 
@@ -63,6 +63,7 @@ def main(DQ: Queue, PQ: Queue, CFG: dataclass) -> pd.DataFrame:
         else:
             print("Terminating worker")
             worker.terminate()
+        conn1.close()
         
     df = get_df(DQ, PQ, CFG)
     print('joining workers')
