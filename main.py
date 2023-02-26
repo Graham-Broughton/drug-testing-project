@@ -47,7 +47,6 @@ def get_data(CFG, multiprocessing=True):
     return df
 
 
-
 if __name__ == "__main__":
     CFG.SAVE = False
     df = get_data(CFG, multiprocessing=True)

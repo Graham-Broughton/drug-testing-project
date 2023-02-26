@@ -10,7 +10,7 @@ CFG=CFG()
 
 
 class PageLoader(Crawler):
-    def get_page_count(self, CFG):
+    def get_page_count(self, pagefile):
         """
         Finds the container holding the last page number and returns it as a string
         """
@@ -18,7 +18,7 @@ class PageLoader(Crawler):
             'last-page'
         ).text
         print(f"Page count: {pages}")
-        with open(os.path.join(CFG.DATA_DIR, f"page_count_{CFG.DATE}.txt"), 'w') as f:
+        with open(pagefile, 'w') as f:
             f.write(pages)
         return str(pages)
 
@@ -34,14 +34,15 @@ class PageLoader(Crawler):
         return
 
     def run(self, data_queue, CFG):
-        if os.path.exists(os.path.join(CFG.PAGE_PATH, f"page_count_{CFG.DATE}.txt")):
+        pagefile = os.path.join(CFG.PAGE_PATH, f"page_count_{CFG.DATE}.txt")
+        if os.path.exists(pagefile):
             print("Using saved page count")
-            with open(os.path.join(CFG.PAGE_PATH, f"page_count_{CFG.DATE}.txt"), 'r') as f:
+            with open(pagefile, 'r') as f:
                 pages = f.read()
             self.load_queue(data_queue, pages)
             return
         self.connect()
-        pages = self.get_page_count(CFG)
+        pages = self.get_page_count(CFG, pagefile)
         self.load_queue(data_queue, pages)
         self.driver.quit()
         return

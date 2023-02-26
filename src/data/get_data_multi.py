@@ -11,7 +11,7 @@ import os
 from src.crawler.PageLoader import PageLoader
 import src.crawler.Worker as work
 
-def get_df(data_queue: Queue, page_queue: Queue, CFG: dataclass) -> pd.DataFrame:
+def get_df(data_queue: Queue, product_queue: Queue, CFG: dataclass) -> pd.DataFrame:
     """
     This function takes dfs from the product queue from the workers and appends them into a list,
     every so often it compiles the list into a list of concatenated dfs until the product queue is empty.
@@ -24,19 +24,19 @@ def get_df(data_queue: Queue, page_queue: Queue, CFG: dataclass) -> pd.DataFrame
     dfs = []
     big_dfs = []
     time.sleep(CFG.SEC_HEADSTART)  # Need to give a head start to the workers for them to connect
-    while not page_queue.empty():  # While there are still pages to be scraped, keep scraping
-        dfs.append(data_queue.get())  # First, list the dfs straight from the queue
+    while not data_queue.empty():  # While there are still pages to be scraped, keep scraping
+        dfs.append(product_queue.get())  # First, list the dfs straight from the queue
         counter += 1
         
         if counter % 250 == 0:
-            print(f"Processing {counter}th df. Product queue and data queue are {data_queue.qsize()} and {page_queue.qsize()} long")
+            print(f"Processing {counter}th df. Product queue and data queue are {product_queue.qsize()} and {data_queue.qsize()} long")
             big_dfs.append(pd.concat(dfs, ignore_index=True))  # Second, concatenate the list of dfs and make another list (probably reduntant)
             dfs = []  # Clear the first list for refilling
 
     # Now that the page queue is empty, we need to make sure that we processed all the data in the data queue
-    if not data_queue.empty():
-        while not data_queue.empty():
-            dfs.append(data_queue.get())
+    if not product_queue.empty():
+        while not product_queue.empty():
+            dfs.append(product_queue.get())
         big_dfs.append(pd.concat(dfs, ignore_index=True))
     return pd.concat(big_dfs, ignore_index=True)
 
@@ -46,7 +46,7 @@ def main(DQ: Queue, PQ: Queue, CFG: dataclass) -> pd.DataFrame:
     """
     # Get the number of pages needed to be scraped, uses date to check if there is a file already
     loader = PageLoader()
-    loader.run(PQ, CFG)
+    loader.run(DQ, CFG)
 
     # Initiate process 'pool' of workers, daemon option runs the in the background so we can use the main process for the reciever
     workers = []
