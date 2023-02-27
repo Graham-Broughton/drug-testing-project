@@ -30,7 +30,7 @@ CFG.PAGE_PATH = page_path
 CFG.PROCESSED_DATA_PATH = processed_data_path
 
 
-def get_data(CFG, multiprocessing=True):
+def get_data(CFG, multiprocessing, save_raw):
     """
     The main entry point of this module, can be run using single or multiprocessing.
     
@@ -43,13 +43,19 @@ def get_data(CFG, multiprocessing=True):
     DQ, PQ = Queue(), Queue()
     df = multi.main(DQ, PQ, CFG)
     print(df.head())
-    if CFG.SAVE: df.to_csv(f'{CFG.RAW_DATA_PATH}/df-{CFG.DATE}.csv', index=False)
+    if save_raw: df.to_csv(f'{CFG.RAW_DATA_PATH}/df-{CFG.DATE}.csv', index=False)
     return df
 
 
 if __name__ == "__main__":
-    CFG.SAVE = False
-    df = get_data(CFG, multiprocessing=True)
+    import argparse
+    args = argparse.ArgumentParser()
+    args.add_argument("--save", '-s', action="store_true", default=False)
+    args.add_argument("--save-raw", '-S', action="store_true", default=False)
+    args.add_argument("--multiprocessing", "-m", action="store_true", default=True)
+    args = args.parse_args()
+
+    df = get_data(CFG, multiprocessing=args.multiprocessing, save_raw=args.save_raw)
     df = process_data(CFG)
     df.to_csv(f'{CFG.PROCESSED_DATA_PATH}/df-{CFG.DATE}.csv', index=False)
     
