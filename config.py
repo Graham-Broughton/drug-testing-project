@@ -1,6 +1,14 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+import os
+
 today = datetime.now().strftime("%Y-%m-%d")
+main_path = os.path.abspath(os.path.dirname(__file__))
+data_path = os.path.join(main_path, "data_files")
+raw_data_path = os.path.join(data_path, "raw")
+page_path = os.path.join(data_path, "page_count_data")
+processed_data_path = os.path.join(data_path, "processed")
+dash_app_path = os.path.join(main_path, "app")
 
 
 @dataclass
@@ -17,14 +25,21 @@ class CFG:
     RESULT_BUTTON_WAIT: int = 30
     MAX_TRIES: int = 5
     WAIT: int = 60
-    DATA_PATH: str = field(default=None)
     NUM_WORKERS: int = 3
     WAIT_INTERVAL: int = 5
     SEC_HEADSTART: int = 60
-    DATE: str = str(today)
-    SAVE: bool = True
     USE_OLDER_DATA: bool = True
+    MAIN_PATH: str = main_path
+    DATA_PATH: str = data_path
+    RAW_DATA_PATH: str = raw_data_path
+    PAGE_PATH: str = page_path
+    PROCESSED_DATA_PATH: str = processed_data_path
 
     def __post_init__(self):
         self.CHROME_OPTS = self.CHROME_OPTS + [f"user-agent={self.USER_AGENT}"]
+
+@dataclass
+class WEB:
+    THEME: str = "BOOTSTRAP"
+    DASH_APP_PATH: str = dash_app_path
     

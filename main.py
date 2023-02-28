@@ -13,21 +13,10 @@ import src.data.get_data_multi as multi
 import src.data.get_data as single
 from config import CFG
 
-CFG = CFG()
 
 date = datetime(2023, 2, 10).strftime("%Y-%m-%d")
-current_dir = os.path.abspath(os.getcwd())
-data_dir = os.path.join(current_dir, "data_files")
-raw_data_path = os.path.join(data_dir, "raw")
-page_path = os.path.join(data_dir, "page_count_data")
-processed_data_path = os.path.join(data_dir, "processed")
-
+CFG = CFG()
 CFG.DATE = date
-CFG.CURRENT_DIR = current_dir
-CFG.DATA_DIR = data_dir
-CFG.RAW_DATA_PATH = raw_data_path
-CFG.PAGE_PATH = page_path
-CFG.PROCESSED_DATA_PATH = processed_data_path
 
 
 def get_data(CFG, multiprocessing, save_raw):
