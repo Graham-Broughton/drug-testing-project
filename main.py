@@ -14,7 +14,7 @@ import src.data.get_data as single
 from config import CFG
 
 
-date = datetime(2023, 2, 10).strftime("%Y-%m-%d")
+date = datetime.now().strftime("%Y-%m-%d")
 CFG = CFG()
 CFG.DATE = date
 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     args = argparse.ArgumentParser()
     args.add_argument("--save", '-s', action="store_true", default=False)
     args.add_argument("--save-raw", '-S', action="store_true", default=False)
-    args.add_argument("--multiprocessing", "-m", action="store_true", default=True)
+    args.add_argument("--multiprocessing", "-m", action="store_true", default=False)
     args = args.parse_args()
 
     df = get_data(CFG, multiprocessing=args.multiprocessing, save_raw=args.save_raw)

@@ -117,17 +117,19 @@ class Crawler():
                 print(f"Collected {i} pages")
 
             # We save frequently in case of interuption/error but replace the saved file each time to reduce clutter
-            if (i % 500 == 0) and CFG.SAVE:
+            if (i % 500 == 0):
                 if previous_date is not None:
                     try:
                         path = os.path.join(CFG.RAW_DATA_PATH, f'df-{previous_date}.pkl')
                         os.remove(path)
                     except Exception as e:
                         print(f'Unable to delete previous saved file because of: {e}')
+                df = pd.concat(dfs)
+                df_dict = {"page": i, "df": df}
                 print("Saving data")
                 previous_date = datetime.date.today()
                 path = os.path.join(CFG.RAW_DATA_PATH, f'df-{previous_date}.pkl')
-                pickle.dump(pd.concat(dfs), open(path, 'wb'))
+                pickle.dump(df_dict, open(path, 'wb'))
 
         print("Finished data collection")
         return pd.concat(dfs, ignore_index=True).reset_index(drop=True)
@@ -140,9 +142,6 @@ class Crawler():
         pages = self.get_page_count(CFG)
         df = self.collect_data(pages, CFG)
         self.teardown_method()
-        if CFG.SAVE:
-            path = os.path.join(CFG.RAW_DATA_PATH, f'scraped_data-{CFG.DATE}.csv')
-            df.to_csv(path, index=False)
         return df
 
 def main(CFG):

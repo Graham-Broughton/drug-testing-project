@@ -42,7 +42,7 @@ class PageLoader(Crawler):
             self.load_queue(data_queue, pages)
             return
         self.connect()
-        pages = self.get_page_count(CFG, pagefile)
+        pages = self.get_page_count(pagefile)
         self.load_queue(data_queue, pages)
         self.driver.quit()
         return
