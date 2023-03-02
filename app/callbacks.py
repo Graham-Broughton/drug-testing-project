@@ -28,3 +28,20 @@ def sample_counts(sample_type):
     return fig1
 
 
+@app.callback(
+    Output(),
+    Input()
+)
+def category_piechart():
+    fig = go.Figure(go.Pie(
+        labels=df.category.value_counts().index,
+        values=df.category.value_counts().values,
+        hole=0.65
+    ))
+    fig.update_traces(hoverinfo='value+percent', textinfo='label', textfont_size=20,
+                    marker=dict(line=dict(color='#000000', width=2)))
+    fig.update_layout(
+        annotations=[
+            dict(text="Categories", x=0.5, y=0.5, font_size=20, showarrow=False)
+        ]
+    )

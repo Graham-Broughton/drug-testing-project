@@ -18,7 +18,7 @@ from config import CFG
 date = datetime.now().strftime("%Y-%m-%d")
 CFG = CFG()
 # CFG.DATE = date  ## in case you want to change the date
-
+pagefile = os.path.join(CFG.PAGE_PATH, f"page_count_{CFG.DATE}.txt")
 
 def get_last_page_count(CFG):
     """
@@ -33,7 +33,8 @@ def get_last_page_count(CFG):
     with open(last_page_count_file, 'r') as f:
         last_page_count = f.read()
         CFG.PAGE_COUNT = last_page_count
-        
+
+    print(F"Last page count: {last_page_count} from: {most_recent_date}")
     return last_page_count, most_recent_date
 
 def get_data(CFG, multiprocessing, save_raw):
@@ -48,7 +49,7 @@ def get_data(CFG, multiprocessing, save_raw):
 
     Pages = PageLoader()
     Pages.connect()
-    new_page_count = Pages.get_page_count()
+    new_page_count = Pages.get_page_count(pagefile)
     CFG.NEW_PAGE_COUNT = new_page_count
 
     if str(new_page_count) == str(last_page_count):

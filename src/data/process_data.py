@@ -58,4 +58,6 @@ def process_data(df):
 
     df['total_benzos'] = np.where((df['ftir_benzo'] == 1) | (df['benzo strip'] == 1), 1, 0)
 
+    df['city'] = df['city'] + ", BC"
+
     return df
