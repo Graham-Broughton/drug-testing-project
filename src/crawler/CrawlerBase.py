@@ -51,7 +51,7 @@ class Crawler(object):
         # checking to see if the error messages are present, if they are, refresh and if not, pass
         try:
             WebDriverWait(self.driver, CFG.SECOND_IFRAME_WAIT).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH, "/html/body/iframe")))
-            WebDriverWait(self.driver, CFG.HEROKU_WAIT).until(EC.presence_of_element_located((By.CLASS_NAME, 'message__title'))) 
+            WebDriverWait(self.driver, CFG.HEROKU_WAIT).until(EC.presence_of_element_located((By.CLASS_NAME, 'message__title')))
             WebDriverWait(self.driver, CFG.REACT_WAIT).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[2]/div'))) 
         except TimeoutException as e:
             pass
@@ -62,10 +62,11 @@ class Crawler(object):
         # waiting to click results tab
         print("Waiting on results button")
         WebDriverWait(self.driver, CFG.RESULT_BUTTON_WAIT).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "#tab_container > li:nth-child(3) > a"))
+                EC.element_to_be_clickable((
+                    By.CSS_SELECTOR, "#tab_container > li:nth-child(3) > a"))
             ).click()
         print("selected results tab")
-        return
+        return self.driver
 
     def connect(self):
         """

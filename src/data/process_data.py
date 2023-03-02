@@ -3,14 +3,16 @@ import numpy as np
 import os
 import re
 import warnings; warnings.simplefilter('ignore')
-
+['trazadone', 'gabapentin', 'Carisoprodol', 'Deschloroetizolam', 'Ghb (wet)', 'Etizolam', 'Bromazolam', 'Zopiclone',
+ 'Methaqualone', '1,4-butanediol', 'Zolpidem', 'Xylazine', '4-chloro-deschloroalprazolam', 'Pregabalin', '4-fluorophenibut'
+ 'Gbl', '']
 
 def opioid_present(col):
     """
     This function uses a list of regex strings to find if any opioids are present in a given column (ftir components).
     """
     return 1 if re.search(
-    '(.*an(y|i)l|heroin|(code|morph|buprenorph)ine|(oxy|hydro)(cod|morph)one|.*tazene|w-1(8|9)|opium|(furanyl\s)?uf-17|6-mam|tramadol)',
+    '(.*an(y|i)l|heroin|(code|morph|buprenorph)ine|(oxy|hydro)(cod|morph)one|.*tazene|opium|(furanyl\s)?uf-17|6-mam|tramadol)',
     col,
     re.IGNORECASE) else 0
 
@@ -20,12 +22,11 @@ def ftir_benzo(col):
     else:
         return 1 if re.search(r'[a-z]*[^m]am(?!\w)', col, re.IGNORECASE) else 0
 
-def process_data(CFG):
+def process_data(df):
     """
     Process the raw scraped dataframe: fixing columns, dropping nans, converting to datetime,
     changing strip results to numericand splitting ftir spectrometer column into multiple columns.
     """
-    df = pd.read_csv(os.path.join(CFG.RAW_DATA_PATH, f"df-{CFG.DATE}.csv"))
     df.columns = df.columns.str.replace('  ', ' ').str.lower()
     df['visit date'] = pd.to_datetime(df['visit date'])
     df = df.dropna(how='all').reset_index(drop=True)

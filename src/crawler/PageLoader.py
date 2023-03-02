@@ -7,7 +7,7 @@ sys.path.append('..')
 from config import CFG
 from src.crawler.CrawlerBase import Crawler
 CFG=CFG()
-
+pagefile = os.path.join(CFG.PAGE_PATH, f"page_count_{CFG.DATE}.txt")
 
 class PageLoader(Crawler):
     def get_page_count(self, pagefile):
@@ -34,7 +34,6 @@ class PageLoader(Crawler):
         return
 
     def run(self, data_queue, CFG):
-        pagefile = os.path.join(CFG.PAGE_PATH, f"page_count_{CFG.DATE}.txt")
         if os.path.exists(pagefile):
             print("Using saved page count")
             with open(pagefile, 'r') as f:

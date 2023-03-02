@@ -34,6 +34,7 @@ class CFG:
     RAW_DATA_PATH: str = raw_data_path
     PAGE_PATH: str = page_path
     PROCESSED_DATA_PATH: str = processed_data_path
+    DATE: str = today
 
     def __post_init__(self):
         self.CHROME_OPTS = self.CHROME_OPTS + [f"user-agent={self.USER_AGENT}"]
