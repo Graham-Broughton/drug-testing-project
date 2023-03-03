@@ -60,6 +60,7 @@ def category_piechart(start_date, end_date):
     fig.update_traces(hoverinfo='label+value', textinfo='percent', textfont_size=12,
                     marker=dict(line=dict(color='#000000', width=2)))
     fig.update_layout(
+        margin=dict(t=0, b=0, l=0, r=0),
         showlegend=False,
         annotations=[
             dict(text="Categories", x=0.5, y=0.5, font_size=20, showarrow=False)
@@ -81,6 +82,7 @@ def total_sample_chart(start_date, end_date):
     fig.update_traces(hoverinfo='label+value', textinfo='percent', textfont_size=12,
                     marker=dict(line=dict(color='#000000', width=2)))
     fig.update_layout(
+        margin=dict(t=0, b=0, l=0, r=0),
         showlegend=False,
         annotations=[
             dict(text="Total<br>Samples", x=0.5, y=0.5, font_size=20, showarrow=False)
@@ -101,6 +103,7 @@ def total_opioids(start_date, end_date):
     fig.update_traces(hoverinfo='label+value', textinfo='percent', textfont_size=12,
                     marker=dict(line=dict(color='#000000', width=2)))
     fig.update_layout(
+        margin=dict(t=0, b=0, l=0, r=0),
         showlegend=False,
         annotations=[
             dict(text="Opioids<br>Present", x=0.5, y=0.5, font_size=20, showarrow=False)
@@ -121,6 +124,7 @@ def total_benzos(start_date, end_date):
     fig.update_traces(hoverinfo='label+value', textinfo='percent', textfont_size=12,
                     marker=dict(line=dict(color='#000000', width=2)))
     fig.update_layout(
+        margin=dict(t=0, b=0, l=0, r=0),
         showlegend=False,
         annotations=[
             dict(text="Benzos<br>Present", x=0.5, y=0.5, font_size=20, showarrow=False)
@@ -141,9 +145,10 @@ def unexpected_opioids(start_date, end_date):
         values=no_opioid['total_opioids'].value_counts().values,
         hole=0.65
     ))
-    fig.update_traces(hoverinfo='value+percent', textinfo='label', textfont_size=12,
+    fig.update_traces(hoverinfo='label+value', textinfo='percent', textfont_size=12,
                     marker=dict(line=dict(color='#000000', width=2)))
     fig.update_layout(
+        margin=dict(t=0, b=0, l=0, r=0),
         showlegend=False,
         annotations=[
             dict(text="Unexpected<br>Opioids", x=0.5, y=0.5, font_size=20, showarrow=False)
@@ -166,9 +171,10 @@ def unexpected_benzos(start_date, end_date):
         textinfo=None,
         hole=0.65
     ))
-    fig.update_traces(hoverinfo='value+percent', textinfo='label', textfont_size=12,
+    fig.update_traces(hoverinfo='label+value', textinfo='percent', textfont_size=12,
                     marker=dict(line=dict(color='#000000', width=2)))
     fig.update_layout(
+        margin=dict(t=0, b=0, l=0, r=0),
         showlegend=False,
         annotations=[
             dict(text="Unexpected<br>Benzos", x=0.5, y=0.5, font_size=20, showarrow=False)
@@ -188,9 +194,10 @@ def benzos_in_opioids(start_date, end_date):
         values=total_opioids['total_benzos'].value_counts().values,
         hole=0.65
     ))
-    fig.update_traces(hoverinfo='value+percent', textinfo='label', textfont_size=20,
+    fig.update_traces(hoverinfo='label+value', textinfo='percent', textfont_size=12,
                     marker=dict(line=dict(color='#000000', width=2)))
     fig.update_layout(
+        margin=dict(t=0, b=0, l=0, r=0),
         showlegend=False,
         annotations=[
             dict(text="Benzos in<br>Opioids", x=0.5, y=0.5, font_size=20, showarrow=False)

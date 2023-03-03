@@ -8,6 +8,7 @@ import dotenv
 import pandas as pd
 import plotly.graph_objects as go
 from dash import Input, Output, dcc, html
+from utils import date_picker
 
 from app import app, srv
 
@@ -26,20 +27,14 @@ sites = df['site'].unique()
 
 app_name = os.getenv("DASH_APP_PATH", "/app")
 
-sidebar = dbc.Col([
+sidebar = [ #dbc.Col(
     html.H3('Filters'),
     html.Hr(),
     html.P("Filter the data by selecting from various properties"),
     dbc.Nav([
+        html.I(className="bi bi-clock"),
         dbc.Label('Select the Date Range:'),
-        dcc.DatePickerRange(
-            min_date_allowed=df['visit date'].min().date(),
-            max_date_allowed=df['visit date'].max().date(),
-            initial_visible_month=df['visit date'].min().date(),
-            end_date=df['visit date'].max().date(),
-            start_date=df['visit date'].min().date(),
-            id='drug-info-date-selector',
-        ),
+        date_picker('drug-info-date-selector'),
         dcc.Slider(
             df['visit date'].min().year,
             df['visit date'].max().year,
@@ -56,7 +51,7 @@ sidebar = dbc.Col([
             id='drug-info-category-checklist',
             ),
     ], vertical=True),
-], className="position-fixed top-0 left-0 bottom-0 w-17 pt-2 pt-1 bg-light", width=3)
+]#, className="position-fixed top-0 left-0 bottom-0 w-17 pt-2 pt-1 bg-light", width=3)
 
 
 mainLayout = html.Div([
@@ -78,18 +73,14 @@ mainLayout = html.Div([
                         dbc.Col([
                             dbc.Row([
                                 dbc.Col([
-                                    dcc.DatePickerRange(
-                                        min_date_allowed=df['visit date'].min().date(),
-                                        max_date_allowed=df['visit date'].max().date(),
-                                        initial_visible_month=df['visit date'].min().date(),
-                                        end_date=df['visit date'].max().date(),
-                                        start_date=df['visit date'].min().date(),
-                                        id='summary-date-range',
-                                    ),
-                                ], width={"size": 12})
+                                    dbc.Label("Choose Date Range:"),
+                                    date_picker('summary-date-range'),
+                                ]) # width={"size": 12})
                             ]),
                             dbc.Row([
-                                    #dcc.Graph(id='total-sample-counts'),
+                                dbc.Col([
+                                    dcc.Graph(id='benzos-in-opioids'),
+                                ]),
                                 dbc.Col([
                                     dcc.Graph(id='category-piechart'),
                                 ]),
@@ -99,7 +90,7 @@ mainLayout = html.Div([
                                 dbc.Col([
                                     dcc.Graph(id='total-benzos'),
                                 ]),
-                            ]),
+                            ], className='hstack g-0'),
                         ], lg=12, width={'size': 12}),
                     ]),
                 ], label='Summary'),
@@ -113,14 +104,7 @@ mainLayout = html.Div([
                     dbc.Row([
                         dbc.Col([
                             dbc.Label('Select the Date Range:'),
-                            dcc.DatePickerRange(
-                                min_date_allowed=df['visit date'].min().date(),
-                                max_date_allowed=df['visit date'].max().date(),
-                                initial_visible_month=df['visit date'].min().date(),
-                                end_date=df['visit date'].max().date(),
-                                start_date=df['visit date'].min().date(),
-                                id='geographic-date-selector',
-                            ),
+                            date_picker(id='geographic-date-selector'),
                             html.Br(),
                             html.Br(),
                             dbc.Label('Select the Category:'),
@@ -139,17 +123,21 @@ mainLayout = html.Div([
                 
                 dbc.Tab([
                     html.Br(),
-                    dbc.Row([
-                        sidebar,
-                        dbc.Col([
-                            dcc.Graph(id='benzos-in-opioids'),
+                    html.Div([
+                        dbc.ListGroup([
+                            dbc.ListGroupItem([
+                                
                             ]),
-                        dbc.Col([]),
-                        dbc.Col([
-                            dcc.Graph(id='unexpected-opioids'),
-                            dcc.Graph(id='unexpected-benzos'),
+                            dbc.ListGroupItem([
+                                #dbc.Col([
+                                    dcc.Graph(id='unexpected-opioids'),
+                                ]),
+                            #]),
+                            dbc.ListGroupItem([
+                                dcc.Graph(id='unexpected-benzos'),
                             ]),
-                    ])        
+                        ]), # , horizontal=True
+                    ]),
                 ], label='Drug Info'),
                 
                 dbc.Tab([
