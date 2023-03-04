@@ -214,13 +214,17 @@ def benzos_in_opioids(start_date, end_date):
 @app.callback(
     Output("geographic-chart", "figure"),
     Input('geographic-date-selector', 'start_date'),
-    Input('geographic-date-selector', 'end_date'))
-def geographic_chart(start_date, end_date):
+    Input('geographic-date-selector', 'end_date'),
+    Input('geographic-category-checklist', 'value'),
+    Input('geography-year-slider', 'value'))
+def geographic_chart(start_date, end_date, category, year):
     colors = ["royalblue","crimson","lightseagreen","orange","lightgrey"]
     limits = [(0, 1), (1, 4), (4, 10), (10, 18), (18, 35)]
     token = os.getenv('MAPBOX_TOKEN')
 
     newdf = df[(df['visit date'] >= start_date) & (df['visit date'] <= end_date)]
+    newdf = newdf[newdf['visit date'].dt.year.isin(list(range(year[0], year[1])))]
+    newdf = newdf[newdf['category'].isin(category)]
     counts = newdf.value_counts('city')
     latlng_df = latlng.merge(counts.to_frame(), on='city').rename({0: 'count'}, axis=1)
 

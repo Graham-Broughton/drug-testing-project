@@ -1,11 +1,46 @@
 import pandas as pd
 import numpy as np
-import os
+
 import re
 import warnings; warnings.simplefilter('ignore')
-['trazadone', 'gabapentin', 'Carisoprodol', 'Deschloroetizolam', 'Ghb (wet)', 'Etizolam', 'Bromazolam', 'Zopiclone',
- 'Methaqualone', '1,4-butanediol', 'Zolpidem', 'Xylazine', '4-chloro-deschloroalprazolam', 'Pregabalin', '4-fluorophenibut'
- 'Gbl', '']
+# ['trazadone', 'gabapentin', 'Carisoprodol', 'Deschloroetizolam', 'Ghb (wet)', 'Etizolam', 'Bromazolam', 'Zopiclone',
+#  'Methaqualone', '1,4-butanediol', 'Zolpidem', 'Xylazine', '4-chloro-deschloroalprazolam', 'Pregabalin', '4-fluorophenibut'
+#  'Gbl', '']
+
+def process_colours(df):
+    """
+    Process colours for use in the sunburst chart
+    """
+    df['colour2'] = df['colour'].replace(r'([a-zA-Z]+)(\s)\((light|dark)\)', r'\3\2\1', regex=True)
+    df['colour2'] = df['colour2'].replace({
+        "Purple": '#A020F0',
+        "light Brown": "#C4A484",
+        "light Green": "#90EE90",
+        "Pink": "#FFC0CB",
+        "Colourless": "#F8F8FF",
+        "White": "#FFFFFF",
+        "Black": "#000000",
+        "dark Purple": "#301934",
+        "Brown": "#964B00",
+        "dark Blue": "#00008B",
+        "Blue": "#0000FF",
+        "light Yellow": "#FFFFE0",
+        "light Pink": "#FFB6C1",
+        "dark Brown": "#654321",
+        "light Grey": "#D3D3D3",
+        "dark Pink": "#FF1493",
+        "light Blue": "#ADD8E6",
+        "light Purple": "#E6E6FA",
+        "light Orange": "#FFA07A",
+        "light Red": "#FFA07A",
+        "dark Orange": "#FF8C00",
+        "dark Green": "#006400",
+        "dark Grey": "#A9A9A9",
+        "dark Red": "#8B0000",
+        "dark Yellow": "#FFD700",
+        "Other": "#F8F8FF"    
+    })
+    return df
 
 def opioid_present(col):
     """
@@ -17,6 +52,10 @@ def opioid_present(col):
     re.IGNORECASE) else 0
 
 def ftir_benzo(col):
+    """
+    Uses regex to find if any benzos are present in a given column (ftir components).
+    It also rejects escitalopram which would otherwise be a match.
+    """
     if col == 'Escitalopram': 
         return 0
     else:
@@ -25,7 +64,8 @@ def ftir_benzo(col):
 def process_data(df):
     """
     Process the raw scraped dataframe: fixing columns, dropping nans, converting to datetime,
-    changing strip results to numericand splitting ftir spectrometer column into multiple columns.
+    changing strip results to numeric and splitting ftir spectrometer column into multiple columns.
+    It also prepares the data for the dashboard.
     """
     df.columns = df.columns.str.replace('  ', ' ').str.lower()
     df['visit date'] = pd.to_datetime(df['visit date'])
@@ -59,5 +99,7 @@ def process_data(df):
     df['total_benzos'] = np.where((df['ftir_benzo'] == 1) | (df['benzo strip'] == 1), 1, 0)
 
     df['city'] = df['city'] + ", BC"
+
+    df = process_colours(df)
 
     return df

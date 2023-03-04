@@ -106,6 +106,21 @@ mainLayout = html.Div([
                             dbc.Label('Select the Date Range:'),
                             date_picker(id='geographic-date-selector'),
                             html.Br(),
+                            dcc.RangeSlider(
+                                df['visit date'].min().year,
+                                df['visit date'].max().year,
+                                1,
+                                marks={
+                                    2018: '2018',
+                                    2019: '2019',
+                                    2020: '2020',
+                                    2021: '2021',
+                                    2022: '2022',
+                                    2023: '2023'
+                                },
+                                value = [df['visit date'].min().year, df['visit date'].max().year],
+                                id='geography-year-slider',
+                            ),
                             html.Br(),
                             dbc.Label('Select the Category:'),
                             dcc.Checklist(
