@@ -12,7 +12,7 @@ from utils import date_picker
 
 from app import app, srv
 
-sys.path.append('..')
+# sys.path.append('..')
 from config import CFG
 
 CFG = CFG()
@@ -39,7 +39,7 @@ sidebar = [ #dbc.Col(
             df['visit date'].min().year,
             df['visit date'].max().year,
             1,
-            value = df['visit date'].max().year,
+            value=df['visit date'].max().year,
             id='drug-info-year-slider',
         ),
         html.Br(),

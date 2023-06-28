@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import sys
 from datetime import date
 
@@ -17,8 +18,8 @@ CFG.DATE = date(2023, 3, 1)
 
 from app import app
 
-df = pd.read_csv(os.path.join(CFG.PROCESSED_DATA_PATH, f"df-processed-{CFG.DATE}.csv"), parse_dates=['visit date'])   
-latlng = pd.read_csv(os.path.join(CFG.PROCESSED_DATA_PATH, 'geodata\latlng.csv'))
+df = pd.read_csv(CFG.PROCESSED_DATA_PATH / f"df-processed-{CFG.DATE}.csv", parse_dates=['visit date'])   
+latlng = pd.read_csv(CFG.PROCESSED_DATA_PATH / 'geodata' / 'latlng.csv')
 ftirs = [x for x in df.columns.tolist() if x.startswith('ftir')]
 for col in ftirs:
     df[col] = df[col].astype(str)
